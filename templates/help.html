@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block page_title %}Help & About{% endblock %}
+
+{% block content %}
+<div class="welcome-section">
+    <h2>Help & About</h2>
+    <p>Learn more about AI VoiceNote and how it works.</p>
+</div>
+
+<div class="card" style="margin-bottom: 20px;">
+    <div class="card-header">
+        <h3><i class="fas fa-info-circle"></i> About AI VoiceNote</h3>
+    </div>
+    <div class="card-body">
+        <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 15px;">
+            AI VoiceNote is an intelligent multilingual text-to-speech platform that understands text, analyzes its meaning and tone, enhances content, and converts it into natural speech. It is designed to demonstrate how NLP (Natural Language Processing) can be combined with local TTS engines to create a seamless pipeline.
+        </p>
+        <p style="color: var(--text-secondary); line-height: 1.6;">
+            <strong>Version:</strong> 1.0 (Phase 3 Final)<br>
+            <strong>Developer:</strong> AI Developer
+        </p>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: 20px;">
+    <div class="card-header">
+        <h3><i class="fas fa-cogs"></i> How it Works</h3>
+    </div>
+    <div class="card-body">
+        <ul style="color: var(--text-secondary); line-height: 1.8; margin-left: 20px;">
+            <li><strong>AI Text Intelligence:</strong> We use lightweight NLP models (like TextBlob and NRCLex) locally to detect the language, compute sentiment, extract keywords, and classify emotions.</li>
+            <li><strong>Smart TTS Engine:</strong> The text is passed to an extensible TTS provider (currently configured to Pyttsx3 for Windows SAPI5 offline generation).</li>
+            <li><strong>Reading Modes:</strong> By selecting modes like 'Study' or 'News', the engine automatically adjusts pacing to fit the context.</li>
+        </ul>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3><i class="fas fa-exclamation-triangle"></i> Known Limitations</h3>
+    </div>
+    <div class="card-body">
+        <ul style="color: var(--text-secondary); line-height: 1.8; margin-left: 20px;">
+            <li><strong>Voice Availability:</strong> The voices shown in the dropdown depend entirely on what is installed on your local Windows OS. We do not fake voices.</li>
+            <li><strong>Multilingual Support:</strong> If your OS lacks a language pack (e.g., Tamil or Spanish), it may fall back to the default English voice.</li>
+            <li><strong>Emotion-Aware Speech:</strong> While we detect the emotion in the text correctly, the local pyttsx3 engine cannot currently change the emotional inflection of the audio. True emotional speech requires Phase 3 cloud neural TTS integrations.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

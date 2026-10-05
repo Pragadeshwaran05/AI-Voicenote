@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="welcome-section">
+    <h2>Turn your words into natural voice.</h2>
+    <p>AI VoiceNote helps you generate lifelike speech from text instantly.</p>
+</div>
+
+<div class="dashboard-grid">
+    <!-- Main Editor Area -->
+    <div class="main-column">
+        <div class="card editor-card">
+            <div class="card-header">
+                <h3><i class="fas fa-edit"></i> Create Your Voice</h3>
+                <div>
+                    <button id="enhanceBtn" class="btn-text" title="Fix basic formatting"><i class="fas fa-magic"></i> Enhance</button>
+                    <button id="summarizeBtn" class="btn-text" title="Summarize long text"><i class="fas fa-compress-alt"></i> Summarize</button>
+                    <button id="clearBtn" class="btn-text text-danger"><i class="fas fa-trash-alt"></i> Clear</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="editor-container">
+                    <textarea id="textInput" placeholder="Enter your text here and let AI VoiceNote bring it to life..."></textarea>
+                    <div class="editor-footer">
+                        <span id="charCount">0 / 5000</span>
+                    </div>
+                </div>
+                
+                <!-- Controls -->
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <label for="languageSelect">Language</label>
+                        <select id="languageSelect">
+                            <option value="en">English (US)</option>
+                            <option value="es" disabled>Spanish (Coming in multilingual phase)</option>
+                            <option value="fr" disabled>French (Coming in multilingual phase)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="voiceSelect">Voice</label>
+                        <select id="voiceSelect">
+                            <option value="default">Default System Voice</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="speedSelect">Speed</label>
+                        <select id="speedSelect">
+                            <option value="0.5">0.5x</option>
+                            <option value="0.75">0.75x</option>
+                            <option value="1.0" selected>1.0x (Normal)</option>
+                            <option value="1.25">1.25x</option>
+                            <option value="1.5">1.5x</option>
+                            <option value="1.75">1.75x</option>
+                            <option value="2.0">2.0x</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="readingModeSelect">Reading Mode</label>
+                        <select id="readingModeSelect">
+                            <option value="standard" selected>Standard</option>
+                            <option value="study">📚 Study Mode</option>
+                            <option value="news">📰 News Mode</option>
+                            <option value="presentation">🎤 Presentation</option>
+                            <option value="accessibility">♿ Accessibility</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button id="analyzeBtn" class="btn-secondary btn-large" style="flex: 1;">
+                        <i class="fas fa-brain"></i> <span>Analyze Text</span>
+                    </button>
+                    <button id="generateBtn" class="btn-primary btn-large" style="flex: 2;">
+                        <i class="fas fa-volume-up"></i> <span>Generate Voice</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Audio Player Section (Hidden by default) -->
+        <div id="audioSection" class="card audio-card hidden">
+            <div class="card-header">
+                <h3><i class="fas fa-headphones"></i> Your Generated Voice</h3>
+                <span class="badge badge-success">Ready</span>
+            </div>
+            <div class="card-body">
+                <div class="player-container">
+                    <audio id="audioPlayer" controls></audio>
+                </div>
+                <div class="player-actions">
+                    <a id="downloadBtn" href="#" class="btn-secondary" download>
+                        <i class="fas fa-download"></i> Download Audio
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Side Column -->
+    <div class="side-column">
+        <!-- Text Insights -->
+        <div class="card insights-card">
+            <div class="card-header">
+                <h3><i class="fas fa-brain"></i> AI Text Intelligence</h3>
+            </div>
+            <div class="card-body">
+                <div class="ai-stats-list">
+                    <div class="ai-stat-row">
+                        <span><i class="fas fa-globe"></i> Language</span>
+                        <strong id="aiLanguage">-</strong>
+                    </div>
+                    <div class="ai-stat-row">
+                        <span><i class="fas fa-smile"></i> Sentiment</span>
+                        <strong id="aiSentiment">-</strong>
+                    </div>
+                    <div class="ai-stat-row">
+                        <span><i class="fas fa-heart"></i> Emotion</span>
+                        <strong id="aiEmotion">-</strong>
+                    </div>
+                    <div class="ai-stat-row" style="flex-direction: column; align-items: flex-start;">
+                        <span><i class="fas fa-key"></i> Keywords</span>
+                        <div id="aiKeywords" class="keyword-tags" style="margin-top: 8px;">
+                            <span class="text-muted">No keywords yet</span>
+                        </div>
+                    </div>
+                </div>
+                <hr style="border-color: var(--border-color); margin: 15px 0;">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="statWords">0</div>
+                        <div class="stat-label">Words</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="statSentences">0</div>
+                        <div class="stat-label">Sentences</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="statChars">0</div>
+                        <div class="stat-label">Chars</div>
+                    </div>
+                </div>
+                <div class="reading-time">
+                    <i class="fas fa-clock"></i> <span id="statTime">0 min 0 sec</span> reading time
+                </div>
+            </div>
+        </div>
+        
+        <!-- Global Stats -->
+        <div class="card insights-card" style="margin-bottom: 20px;">
+            <div class="card-header">
+                <h3><i class="fas fa-chart-bar"></i> Usage Stats</h3>
+            </div>
+            <div class="card-body">
+                <div class="stats-grid" style="grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="stat-item">
+                        <div class="stat-value" id="globalTotalGen" style="font-size: 1.2rem;">0</div>
+                        <div class="stat-label">Total Gens</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="globalSaved" style="font-size: 1.2rem;">0</div>
+                        <div class="stat-label">Favorites</div>
+                    </div>
+                    <div class="stat-item" style="grid-column: span 2;">
+                        <div class="stat-value" id="globalLang" style="font-size: 1.2rem;">-</div>
+                        <div class="stat-label">Top Language</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Generations Mini -->
+        <div class="card recent-mini-card">
+            <div class="card-header">
+                <h3><i class="fas fa-history"></i> Recent</h3>
+                <a href="/history" class="link-small">View All</a>
+            </div>
+            <div class="card-body">
+                <div id="recentMiniList" class="recent-mini-list">
+                    <!-- Loaded via JS -->
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

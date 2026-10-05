@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block page_title %}Audio Library (Favorites){% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/history.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="welcome-section">
+    <h2>My Audio Library</h2>
+    <p>All your favorite voice generations saved in one place.</p>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3><i class="fas fa-star"></i> Favorites</h3>
+        <button id="refreshBtn" class="btn-text"><i class="fas fa-sync-alt"></i> Refresh</button>
+    </div>
+    
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="history-table hidden">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Text Preview</th>
+                        <th>Settings</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                    <!-- Loaded via JS -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div id="emptyState" class="empty-state">
+            <i class="fas fa-bookmark empty-icon"></i>
+            <h3>No favorites yet</h3>
+            <p>Go to History to favorite your best generations.</p>
+            <a href="/history" class="btn-primary" style="margin-top: 15px;">Go to History</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/history.js') }}"></script>
+<script>
+    // Override loadHistory to only fetch favorites
+    window.loadHistory = async function() {
+        try {
+            const response = await fetch('/api/history?favorite=true');
+            if (response.ok) {
+                const records = await response.json();
+                renderHistory(records);
+            } else {
+                showToast('Failed to load favorites', 'error');
+            }
+        } catch (error) {
+            console.error(error);
+            showToast('Network error loading favorites', 'error');
+        }
+    }
+    // ensure loadHistory runs again after override
+    document.addEventListener('DOMContentLoaded', () => {
+        loadHistory();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block page_title %}Settings{% endblock %}
+
+{% block extra_css %}
+<style>
+.settings-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    max-width: 600px;
+}
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+.setting-item:last-child {
+    border-bottom: none;
+}
+.setting-item label {
+    font-weight: 500;
+    margin-bottom: 5px;
+    display: block;
+}
+.setting-item .description {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+.setting-control select, .setting-control input[type="text"] {
+    padding: 8px 12px;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-color);
+    background: var(--bg-main);
+    color: var(--text-primary);
+    min-width: 150px;
+}
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-color);
+    transition: .4s;
+    border-radius: 24px;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 3px;
+    background-color: var(--text-secondary);
+    transition: .4s;
+    border-radius: 50%;
+}
+input:checked + .slider {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+input:checked + .slider:before {
+    transform: translateX(24px);
+    background-color: white;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="welcome-section">
+    <h2>Settings</h2>
+    <p>Customize your AI VoiceNote experience and preferences.</p>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3><i class="fas fa-sliders-h"></i> Preferences</h3>
+        <button id="saveSettingsBtn" class="btn-primary">Save Changes</button>
+    </div>
+    <div class="card-body">
+        <div class="settings-grid">
+            <div class="setting-item">
+                <div>
+                    <label>Default Language</label>
+                    <div class="description">Language pre-selected on the dashboard</div>
+                </div>
+                <div class="setting-control">
+                    <select id="set_language">
+                        <option value="en">English (US)</option>
+                        <option value="es">Spanish (Future)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="setting-item">
+                <div>
+                    <label>Default Reading Mode</label>
+                    <div class="description">Automatically apply a style when creating voices</div>
+                </div>
+                <div class="setting-control">
+                    <select id="set_reading_mode">
+                        <option value="standard">Standard</option>
+                        <option value="study">Study Mode</option>
+                        <option value="news">News Mode</option>
+                        <option value="presentation">Presentation</option>
+                        <option value="accessibility">Accessibility</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="setting-item">
+                <div>
+                    <label>Default Speed</label>
+                    <div class="description">Base speed multiplier</div>
+                </div>
+                <div class="setting-control">
+                    <select id="set_speed">
+                        <option value="0.75">0.75x</option>
+                        <option value="1.0">1.0x (Normal)</option>
+                        <option value="1.25">1.25x</option>
+                        <option value="1.5">1.5x</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="setting-item">
+                <div>
+                    <label>Auto-Analyze Text</label>
+                    <div class="description">Run AI Analysis immediately on paste</div>
+                </div>
+                <div class="setting-control">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="set_auto_analyze" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="setting-item">
+                <div>
+                    <label>Theme</label>
+                    <div class="description">Visual appearance (Dark Mode is forced currently)</div>
+                </div>
+                <div class="setting-control">
+                    <select disabled>
+                        <option>Dark Futuristic (Active)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    // Load
+    try {
+        const res = await fetch('/api/settings');
+        if (res.ok) {
+            const data = await res.json();
+            if (data.default_language) document.getElementById('set_language').value = data.default_language;
+            if (data.default_reading_mode) document.getElementById('set_reading_mode').value = data.default_reading_mode;
+            if (data.default_speed) document.getElementById('set_speed').value = data.default_speed;
+            if (data.auto_analyze !== undefined) document.getElementById('set_auto_analyze').checked = data.auto_analyze === 'true';
+        }
+    } catch(e) {}
+    
+    // Save
+    document.getElementById('saveSettingsBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('saveSettingsBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        
+        const payload = {
+            default_language: document.getElementById('set_language').value,
+            default_reading_mode: document.getElementById('set_reading_mode').value,
+            default_speed: document.getElementById('set_speed').value,
+            auto_analyze: document.getElementById('set_auto_analyze').checked ? 'true' : 'false'
+        };
+        
+        try {
+            const res = await fetch('/api/settings', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                showToast('Settings saved successfully.', 'success');
+            } else {
+                showToast('Failed to save settings.', 'error');
+            }
+        } catch(e) {
+            showToast('Network error.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'Save Changes';
+        }
+    });
+});
+</script>
+{% endblock %}
